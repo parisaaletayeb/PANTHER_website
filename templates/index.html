@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANTHER Model - PDB Structure Scoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .input-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-section {
+            display: none;
+            background: #e8f4fd;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #bee5eb;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #dee2e6;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .log-output {
+            background: #212529;
+            color: #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            border: 2px solid #495057;
+        }
+
+        .results-section {
+            display: none;
+            background: #d4edda;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #c3e6cb;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .results-table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .error-section {
+            display: none;
+            background: #f8d7da;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .methodology {
+            background: #fff3cd;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #ffeaa7;
+        }
+
+        .methodology h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .methodology p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .processing {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 PANTHER Model</h1>
+            <p>Protein-Nucleotide Thermodynamic Affinity Predictor using Random Forest regression. Submit PDB IDs to predict binding free energy decomposition scores for protein-RNA complexes.</p>
+        </div>
+
+        <div class="input-section">
+            <h2>📋 Submit PDB Structure IDs</h2>
+            <form id="pdbForm">
+                <div class="input-group">
+                    <label for="singlePDB">Single PDB ID:</label>
+                    <input type="text" id="singlePDB" placeholder="e.g., 1A1T" maxlength="4">
+                </div>
+                
+                <div style="text-align: center; margin: 20px 0; color: #6c757d; font-weight: 600;">
+                    — OR —
+                </div>
+
+                <div class="input-group">
+                    <label for="multiplePDB">Multiple PDB IDs (one per line):</label>
+                    <textarea id="multiplePDB" placeholder="1A1T&#10;2F8S&#10;3P59&#10;..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    🚀 Start Analysis
+                </button>
+            </form>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <h2>⚙️ Processing Status</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Initializing...</div>
+            <div class="log-output" id="logOutput"></div>
+        </div>
+
+        <div class="error-section" id="errorSection">
+            <h2>❌ Error</h2>
+            <p id="errorMessage"></p>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <h2>📊 Analysis Results</h2>
+            <table class="results-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>PDB ID</th>
+                        <th>Binding Affinity Score</th>
+                        <th>Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+            <button class="download-btn" id="downloadBtn">📥 Download Results</button>
+        </div>
+
+        <div class="methodology">
+            <h3>🔬 Methodology Overview</h3>
+            <p><strong>Feature Extraction:</strong> The pipeline analyzes protein-RNA complexes by computing center-of-mass distances between amino acid residues and nucleotides, along with hydrogen bond counts using a 3.5 Å distance threshold.</p>
+            <p><strong>Machine Learning Model:</strong> A Random Forest regressor trained on binding free energy decomposition data predicts interaction strength. Features include geometric descriptors and chemical properties.</p>
+            <p><strong>Scoring Interpretation:</strong> Negative scores indicate favorable binding interactions, while positive scores suggest unfavorable or weakly binding complexes. The magnitude represents the predicted binding strength.</p>
+        </div>
+    </div>
+
+    <script>
+        class PDBAnalyzer {
+            constructor() {
+                this.currentJobId = null;
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('pdbForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.startAnalysis();
+                });
+
+                document.getElementById('downloadBtn').addEventListener('click', () => {
+                    this.downloadResults();
+                });
+            }
+
+            async startAnalysis() {
+                const singlePDB = document.getElementById('singlePDB').value.trim().toUpperCase();
+                const multiplePDB = document.getElementById('multiplePDB').value.trim().toUpperCase();
+                
+                let pdbIds = [];
+                
+                if (singlePDB) {
+                    pdbIds = [singlePDB];
+                } else if (multiplePDB) {
+                    pdbIds = multiplePDB.split('\n')
+                        .map(id => id.trim())
+                        .filter(id => id.length > 0);
+                } else {
+                    this.showError('Please enter at least one PDB ID');
+                    return;
+                }
+
+                // Validate PDB IDs (should be 4 characters)
+                const invalidIds = pdbIds.filter(id => !/^[A-Z0-9]{4}$/.test(id));
+                if (invalidIds.length > 0) {
+                    this.showError(`Invalid PDB ID format: ${invalidIds.join(', ')}. PDB IDs should be 4 characters long.`);
+                    return;
+                }
+
+                this.hideAllSections();
+                this.showProgress();
+                
+                try {
+                    // Simulate the analysis process
+                    await this.simulateAnalysis(pdbIds);
+                } catch (error) {
+                    this.showError(`Analysis failed: ${error.message}`);
+                }
+            }
+
+            async simulateAnalysis(pdbIds) {
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                const logOutput = document.getElementById('logOutput');
+                
+                try {
+                    // Submit job to backend
+                    progressText.textContent = 'Submitting analysis job...';
+                    logOutput.innerHTML += '\n📤 Submitting PDB IDs to PANTHER pipeline...';
+                    
+                    const response = await fetch('/api/submit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            pdb_ids: pdbIds
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Failed to submit job');
+                    }
+                    
+                    const jobData = await response.json();
+                    const jobId = jobData.job_id;
+                    
+                    logOutput.innerHTML += `\n✅ Job submitted successfully. ID: ${jobId}`;
+                    logOutput.scrollTop = logOutput.scrollHeight;
+                    
+                    // Poll for job status
+                    await this.pollJobStatus(jobId, progressFill, progressText, logOutput);
+                    
+                } catch (error) {
+                    throw new Error(`Backend communication failed: ${error.message}`);
+                }
+            }
+
+            async pollJobStatus(jobId, progressFill, progressText, logOutput) {
+                const pollInterval = 2000; // Poll every 2 seconds
+                
+                while (true) {
+                    try {
+                        const response = await fetch(`/api/status/${jobId}`);
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch job status');
+                        }
+                        
+                        const job = await response.json();
+                        
+                        // Update progress
+                        progressFill.style.width = `${job.progress}%`;
+                        progressText.textContent = job.current_step;
+                        
+                        // Add new log entries
+                        if (job.log && job.log.length > 0) {
+                            const lastLogCount = this.lastLogCount || 0;
+                            for (let i = lastLogCount; i < job.log.length; i++) {
+                                const entry = job.log[i];
+                                logOutput.innerHTML += `\n${entry.message}`;
+                            }
+                            this.lastLogCount = job.log.length;
+                            logOutput.scrollTop = logOutput.scrollHeight;
+                        }
+                        
+                        if (job.status === 'completed') {
+                            progressText.textContent = 'Analysis complete! Loading results...';
+                            await this.loadResults(jobId);
+                            break;
+                        } else if (job.status === 'failed') {
+                            throw new Error(job.error || 'Job execution failed');
+                        }
+                        
+                        await this.delay(pollInterval);
+                        
+                    } catch (error) {
+                        throw new Error(`Status polling failed: ${error.message}`);
+                    }
+                }
+            }
+
+            async loadResults(jobId) {
+                try {
+                    const response = await fetch(`/api/results/${jobId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load results');
+                    }
+                    
+                    const data = await response.json();
+                    this.currentJobId = jobId;
+                    this.displayResults(data.results, data.summary);
+                    
+                } catch (error) {
+                    throw new Error(`Results loading failed: ${error.message}`);
+                }
+            }
+
+            displayResults(results, summary) {
+                const resultsBody = document.getElementById('resultsBody');
+                resultsBody.innerHTML = '';
+                
+                results.forEach(result => {
+                    const row = document.createElement('tr');
+                    const interpretation = this.getInterpretationColor(result.interpretation);
+                    
+                    row.innerHTML = `
+                        <td style="font-family: 'Courier New', monospace; font-weight: bold;">${result.pdb_id}</td>
+                        <td style="font-family: 'Courier New', monospace;">${result.score}</td>
+                        <td style="color: ${interpretation.color};">${interpretation.icon} ${result.interpretation}</td>
+                    `;
+                    resultsBody.appendChild(row);
+                });
+
+                this.currentResults = results;
+                this.hideProgress();
+                this.showResults();
+            }
+
+            getInterpretationColor(interpretation) {
+                const colorMap = {
+                    'Strong favorable binding': { color: '#28a745', icon: '🟢' },
+                    'Moderate favorable binding': { color: '#ffc107', icon: '🟡' },
+                    'Weak/neutral binding': { color: '#fd7e14', icon: '🟠' },
+                    'Unfavorable binding': { color: '#dc3545', icon: '🔴' }
+                };
+                
+                return colorMap[interpretation] || { color: '#6c757d', icon: '⚪' };
+            }
+
+            async downloadResults() {
+                if (!this.currentJobId) return;
+                
+                try {
+                    const response = await fetch(`/api/download/${this.currentJobId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to download results');
+                    }
+                    
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `panther_results_${this.currentJobId.substring(0, 8)}.txt`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                } catch (error) {
+                    this.showError(`Download failed: ${error.message}`);
+                }
+            }
+
+            showProgress() {
+                document.getElementById('progressSection').style.display = 'block';
+                document.getElementById('submitBtn').disabled = true;
+            }
+
+            hideProgress() {
+                document.getElementById('progressSection').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+            }
+
+            showResults() {
+                document.getElementById('resultsSection').style.display = 'block';
+            }
+
+            showError(message) {
+                document.getElementById('errorMessage').textContent = message;
+                document.getElementById('errorSection').style.display = 'block';
+                document.getElementById('submitBtn').disabled = false;
+            }
+
+            hideAllSections() {
+                document.getElementById('progressSection').style.display = 'none';
+                document.getElementById('resultsSection').style.display = 'none';
+                document.getElementById('errorSection').style.display = 'none';
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize the application
+        new PDBAnalyzer();
+    </script>
+</body>
+</html>
