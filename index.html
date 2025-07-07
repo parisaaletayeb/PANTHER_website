@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧬 PANTHER Model - Protein-RNA Binding Predictor</title>
+    <meta name="description" content="PANTHER: Protein-Nucleotide Thermodynamic Affinity Predictor using Random Forest regression for protein-RNA binding analysis">
+    <meta name="keywords" content="protein, RNA, binding, machine learning, bioinformatics, PANTHER">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧬</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1>🧬 PANTHER Model</h1>
+            <p class="subtitle">Protein-Nucleotide Thermodynamic Affinity Predictor</p>
+            <p class="description">Advanced machine learning tool for predicting protein-RNA binding affinities using Random Forest regression and molecular feature analysis.</p>
+        </header>
+
+        <!-- Demo Notice -->
+        <div class="demo-notice">
+            <div class="notice-content">
+                <h3>🎮 Interactive Demo Version</h3>
+                <p>This is a demonstration of the PANTHER interface. For real protein-RNA analysis with actual ML predictions, visit our full application.</p>
+                <a href="#" class="full-app-link" onclick="showFullAppInfo()">🚀 Access Full Application</a>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <section class="input-section">
+            <h2>📋 Submit PDB Structure IDs</h2>
+            <form id="pdbForm">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="singlePDB">Single PDB ID:</label>
+                        <input type="text" id="singlePDB" placeholder="e.g., 1A1T" maxlength="4" autocomplete="off">
+                        <small class="input-hint">Enter a 4-character PDB identifier</small>
+                    </div>
+                    
+                    <div class="separator">
+                        <span>— OR —</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="multiplePDB">Multiple PDB IDs (one per line):</label>
+                        <textarea id="multiplePDB" placeholder="1A1T&#10;2F8S&#10;3P59&#10;..."></textarea>
+                        <small class="input-hint">Multiple PDB IDs, one per line</small>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="btn-icon">🚀</span>
+                    <span class="btn-text">Start Analysis (Demo)</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- Progress Section -->
+        <section class="progress-section" id="progressSection" style="display: none;">
+            <h2>⚙️ Analysis Progress</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Initializing demo analysis...</div>
+            </div>
+            <div class="demo-log" id="demoLog"></div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+            <h2>📊 Analysis Results</h2>
+            <div class="results-summary" id="resultsSummary"></div>
+            <div class="results-table-container">
+                <table class="results-table" id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>PDB ID</th>
+                            <th>Binding Affinity Score</th>
+                            <th>Confidence</th>
+                            <th>Interpretation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody"></tbody>
+                </table>
+            </div>
+            <div class="results-actions">
+                <button class="download-btn" id="downloadBtn">📥 Download Results (Demo)</button>
+                <button class="reset-btn" id="resetBtn">🔄 Analyze More</button>
+            </div>
+        </section>
+
+        <!-- Methodology Section -->
+        <section class="methodology">
+            <h3>🔬 Methodology Overview</h3>
+            <div class="methodology-grid">
+                <div class="method-card">
+                    <h4>🧪 Feature Extraction</h4>
+                    <p>Analyzes protein-RNA complexes by computing center-of-mass distances between amino acid residues and nucleotides, along with hydrogen bond counts using a 3.5 Å distance threshold.</p>
+                </div>
+                <div class="method-card">
+                    <h4>🤖 Machine Learning</h4>
+                    <p>Random Forest regressor trained on binding free energy decomposition data predicts interaction strength using geometric descriptors and chemical properties.</p>
+                </div>
+                <div class="method-card">
+                    <h4>📈 Score Interpretation</h4>
+                    <p>Negative scores indicate favorable binding interactions, while positive scores suggest unfavorable or weakly binding complexes. Magnitude represents binding strength.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <h3>✨ Key Features</h3>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <h4>High Accuracy</h4>
+                    <p>Random Forest model trained on extensive protein-RNA binding data</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Fast Analysis</h4>
+                    <p>Rapid processing of PDB structures with real-time progress tracking</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔬</div>
+                    <h4>Scientific Rigor</h4>
+                    <p>Based on thermodynamic principles and molecular interaction analysis</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h4>Detailed Results</h4>
+                    <p>Comprehensive binding affinity predictions with confidence scores</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Citation Section -->
+        <section class="citation">
+            <h3>📚 Citation</h3>
+            <div class="citation-box">
+                <p>If you use PANTHER in your research, please cite:</p>
+                <blockquote>
+                    PANTHER: Protein-Nucleotide Thermodynamic Affinity Predictor for protein-RNA binding analysis. 
+                    Available at: <span id="currentUrl"></span>
+                </blockquote>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>🧬 PANTHER Model</h4>
+                    <p>Advanced protein-RNA binding prediction tool</p>
+                </div>
+                <div class="footer-section">
+                    <h4>🔗 Links</h4>
+                    <ul>
+                        <li><a href="#" onclick="showFullAppInfo()">Full Application</a></li>
+                        <li><a href="https://github.com/Parisa_Aletayeb/panther-web-app" target="_blank">Source Code</a></li>
+                        <li><a href="#methodology">Methodology</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>📧 Contact</h4>
+                    <p>For questions or collaboration opportunities</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PANTHER Model. Academic use permitted.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal for Full App Info -->
+    <div id="fullAppModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeFullAppInfo()">&times;</span>
+            <h3>🚀 Full PANTHER Application</h3>
+            <p>The complete PANTHER tool with real ML analysis is available at:</p>
+            <div class="app-links">
+                <a href="#" class="app-link primary">🔬 Full Analysis Tool</a>
+                <a href="#" class="app-link secondary">📖 Documentation</a>
+            </div>
+            <p><strong>Note:</strong> This GitHub Pages version is for demonstration only. The full application includes:</p>
+            <ul>
+                <li>✅ Real protein-RNA binding analysis</li>
+                <li>✅ Machine learning predictions</li>
+                <li>✅ PDB structure processing</li>
+                <li>✅ Downloadable scientific results</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
